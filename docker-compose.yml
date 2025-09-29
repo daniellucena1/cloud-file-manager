@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: cloud_file_manager
+    restart: always
+    environment:
+      POSTGRES_USER: manager
+      POSTGRES_PASSWORD: $9uw>O8~76_1j}WGqoa)8.R{
+      POSTGRES_DB: cloud_file_manager
+    ports:
+      - "5435:5432"
+    volumes:
+    - postgres_data:/var/lib/postgresql/data
+volumes:
+  postgres_data:
