@@ -10,8 +10,8 @@ import (
 )
 
 func VerifyToken (ctx *gin.Context) {
-	tokenString, err := ctx.Cookie("Authorization")
-	if err != nil {
+	tokenString := ctx.GetHeader("Authorization")
+	if tokenString == "" {
 		response := Response{
 			Message: "É necessário token de autorização",
 		}
@@ -20,7 +20,7 @@ func VerifyToken (ctx *gin.Context) {
 	}
 
 	token, err := jwt.Parse(tokenString, func(t *jwt.Token) (any, error) {
-		return os.Getenv("JWT_SECRET"), nil
+		return []byte(os.Getenv("JWT_SECRET")), nil
 	})
 	if err != nil {
 		response := Response{
