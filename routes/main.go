@@ -2,6 +2,7 @@ package routes
 
 import (
 	"cloud_file_manager/controllers"
+	"cloud_file_manager/handlers"
 
 	"github.com/gin-gonic/gin"
 )
@@ -18,6 +19,6 @@ func SetupRoutes (server *gin.Engine, UserController controllers.UserController)
 	// User routes
 	users := server.Group("/users")
 	users.GET("/", UserController.GetUsers)
-	users.GET("/:id", UserController.GetUserById)
+	users.GET("/:id", handlers.VerifyToken, UserController.GetUserById)
 	users.POST("/", UserController.CreateUser)
 }
