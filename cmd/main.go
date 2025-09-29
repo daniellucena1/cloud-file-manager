@@ -1,23 +1,13 @@
 package main
 
 import (
-	"cloud_file_manager/controllers"
-
-	"github.com/gin-gonic/gin"
+	"cloud_file_manager/app"
 )
 
 func main() {
-    server := gin.Default()
-
-    UserController := controllers.NewUserController()
-
-    server.GET("/ping", func(ctx *gin.Context) {
-        ctx.JSON(200, gin.H{
-            "message": "PONG",
-        })
-    })
-
-    server.GET("/users", UserController.GetUsers)
-
-    server.Run(":8000")
+	// setup and run app
+	err := app.SetupAndRunApp()
+	if err != nil {
+		panic(err)
+	}
 }
