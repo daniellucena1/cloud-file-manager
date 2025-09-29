@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"cloud_file_manager/models"
 	"cloud_file_manager/usecase"
 	"net/http"
 
@@ -19,13 +18,10 @@ func NewUserController(usecase usecase.UserUsecase) userController {
 }
 
 func (p *userController) GetUsers(ctx *gin.Context) {
-	users := []models.User{
-		{
-			ID: 1,
-			Name: "Daniel Torres",
-			Email: "daniel@exemplo.com",
-			Password: "qualquercoisa123",
-		},
+	
+	users, err := p.userUsecase.GetUsers()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
 	}
 
 	ctx.JSON(http.StatusOK, users)

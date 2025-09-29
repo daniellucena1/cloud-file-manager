@@ -4,14 +4,15 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	_ "github.com/lib/pq"
 )
 
 func ConnectDB() (*sql.DB, error) {
 	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s " + "password=%s dbname=%s sslmode=disable", 
 		os.Getenv("HOST"), 
 		os.Getenv("PORT"), 
-		os.Getenv("USER"), 
-		os.Getenv("PASSWORD"), 
+		os.Getenv("DB_USER"), 
+		os.Getenv("DB_PASSWORD"), 
 		os.Getenv("DBNAME"),
 	)
 

@@ -1,15 +1,20 @@
 package usecase
 
-import "cloud_file_manager/models"
+import (
+	"cloud_file_manager/models"
+	"cloud_file_manager/repository"
+)
 
 type UserUsecase struct {
-
+	repository repository.UserRepository
 }
 
-func NewUserUseCase() UserUsecase {
-	return UserUsecase{}
+func NewUserUseCase(repo repository.UserRepository) UserUsecase {
+	return UserUsecase{
+		repository: repo,
+	}
 }
 
 func (uu *UserUsecase) GetUsers() ([]models.User, error) {
-	return []models.User{}, nil
+	return uu.repository.GetUsers()
 }

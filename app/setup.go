@@ -4,6 +4,7 @@ import (
 	"cloud_file_manager/config"
 	"cloud_file_manager/controllers"
 	"cloud_file_manager/database"
+	"cloud_file_manager/repository"
 	"cloud_file_manager/usecase"
 
 	"github.com/gin-gonic/gin"
@@ -21,8 +22,10 @@ func SetupAndRunApp() error {
 	}
 
 	server := gin.Default()
+	
+	UserRepository := repository.NewUserRepository(dbConection)
 
-	UserUsecase := usecase.NewUserUseCase()
+	UserUsecase := usecase.NewUserUseCase(UserRepository)
 
 	UserController := controllers.NewUserController(UserUsecase)
 
