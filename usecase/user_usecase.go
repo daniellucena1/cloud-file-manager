@@ -32,3 +32,14 @@ func (uu *UserUsecase) CreateUser(user models.User) (models.User, error) {
 
 	return user, nil
 }
+
+func (uu *UserUsecase) GetUserById(id int) (*models.User, error) {
+
+	user, err := uu.repository.GetUserById(id)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	return user, nil
+}

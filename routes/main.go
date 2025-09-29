@@ -18,5 +18,6 @@ func SetupRoutes (server *gin.Engine, UserController controllers.UserController)
 	// User routes
 	users := server.Group("/users")
 	users.GET("/", UserController.GetUsers)
+	users.GET("/:id", UserController.GetUserById)
 	users.POST("/", UserController.CreateUser)
 }

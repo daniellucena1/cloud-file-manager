@@ -1,9 +1,11 @@
 package controllers
 
 import (
+	"cloud_file_manager/handlers"
 	"cloud_file_manager/models"
 	"cloud_file_manager/usecase"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -43,4 +45,40 @@ func (u *UserController) CreateUser(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusCreated, insertedUser)
+}
+
+func (u *UserController) GetUserById(ctx *gin.Context) {
+	
+	id := ctx.Param("id")
+	if id == "" {
+		response := handlers.Response{
+			Message: "Id do produto não pode ser nulo",
+		}
+		ctx.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	userId, err := strconv.Atoi(id)
+	if err != nil {
+		response := handlers.Response{
+			Message: "Id do produto precisa ser um número",
+		}
+		ctx.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	user, err := u.userUsecase.GetUserById(userId)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
+	
+	if user == nil {
+		response := handlers.Response{
+			Message: "Usuário não foi encontrado na base de dados",
+		}
+		ctx.JSON(http.StatusNotFound, response)
+		return
+	}
+	ctx.JSON(http.StatusOK, user)
 }
