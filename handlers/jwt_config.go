@@ -49,7 +49,7 @@ func CreateToken(username string, password string) (string, error) {
 			"exp": time.Now().Add(time.Hour * 24).Unix(),
 		})
 	
-	tokenString, err := token.SignedString(os.Getenv("JWT_SECRET"))
+	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 	if err != nil {
 		return "", err
 	}

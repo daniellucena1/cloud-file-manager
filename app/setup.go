@@ -27,8 +27,9 @@ func SetupAndRunApp() error {
 	UserRepository := repository.NewUserRepository(dbConection)
 	UserUsecase := usecase.NewUserUseCase(UserRepository)
 	UserController := controllers.NewUserController(UserUsecase)
+	LoginController := controllers.NewLoginController(UserUsecase)
 
-	routes.SetupRoutes(server, UserController)
+	routes.SetupRoutes(server, UserController, LoginController)
 
 	server.Run(":8000")
 

@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRoutes (server *gin.Engine, UserController controllers.UserController) {
+func SetupRoutes (server *gin.Engine, UserController controllers.UserController, LoginController controllers.LoginController) {
 
 	// PING
 	server.GET("/ping", func(ctx *gin.Context) {
@@ -21,4 +21,8 @@ func SetupRoutes (server *gin.Engine, UserController controllers.UserController)
 	users.GET("/", UserController.GetUsers)
 	users.GET("/:id", handlers.VerifyToken, UserController.GetUserById)
 	users.POST("/", UserController.CreateUser)
+
+	// Login routes
+	login := server.Group("/login")
+	login.POST("/", LoginController.Login)
 }

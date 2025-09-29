@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"cloud_file_manager/dto"
 	"cloud_file_manager/models"
 	"cloud_file_manager/repository"
 	"fmt"
@@ -36,6 +37,17 @@ func (uu *UserUsecase) CreateUser(user models.User) (models.User, error) {
 func (uu *UserUsecase) GetUserById(id int) (*models.User, error) {
 
 	user, err := uu.repository.GetUserById(id)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	return user, nil
+}
+
+func (uu *UserUsecase) Login(userDto dto.UserLoginDto) (*dto.UserResponseDto, error) {
+
+	user, err := uu.repository.Login(userDto)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
