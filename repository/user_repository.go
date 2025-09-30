@@ -1,10 +1,13 @@
 package repository
 
 import (
+	"cloud_file_manager/dto"
+	"cloud_file_manager/handlers"
 	"cloud_file_manager/models"
 	"database/sql"
 	"fmt"
 
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserRepository struct {
@@ -60,7 +63,12 @@ func (ur *UserRepository) CreateUser(user models.User) (int, error) {
 		return 0, err
 	}
 
-	err = query.QueryRow(user.Name, user.Email, user.Password).Scan(&id)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return 0, err
+	}
+
+	err = query.QueryRow(user.Name, user.Email, hashedPassword).Scan(&id)
 	if err != nil {
 		fmt.Println(err)
 		return 0, err
@@ -68,4 +76,84 @@ func (ur *UserRepository) CreateUser(user models.User) (int, error) {
 
 	query.Close()
 	return id, nil
-} 
+}
+
+func (ur *UserRepository) GetUserById(id int) (*models.User, error) {
+	
+	var user models.User
+
+	query, err := ur.connection.Prepare("SELECT * FROM users WHERE id = $1")
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	err = query.QueryRow(id).Scan(
+		&user.ID,
+		&user.Name,
+		&user.Email,
+		&user.Password,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+
+		return nil, err
+	}
+
+	query.Close()
+	return &user, nil
+}
+
+func (ur *UserRepository) Login (userDto dto.UserLoginDto) (*dto.UserResponseDto, error) {
+	var user models.User
+
+	query, err := ur.connection.Prepare("SELECT id, user_name, user_email, user_password FROM users WHERE user_email = $1")
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	err = query.QueryRow(userDto.Email).Scan(
+		&user.ID,
+		&user.Name,
+		&user.Email,
+		&user.Password,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+
+		return nil, err
+	}
+
+	validPassword, err := validatePassword(userDto.Password, user.Password)
+	if err != nil || !validPassword {
+		return nil, err
+	}
+
+	var userResponse dto.UserResponseDto
+	userResponse.ID = user.ID
+	userResponse.Name = user.Name
+	userResponse.Email = user.Email
+
+	token, err := handlers.CreateToken(user.Name, user.Password, user.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	userResponse.Token = token
+
+	query.Close()
+	return &userResponse, nil
+}
+
+func validatePassword (password string, savedPassword string) (bool, error) {
+	err := bcrypt.CompareHashAndPassword([]byte(savedPassword), []byte(password))
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}

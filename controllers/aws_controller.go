@@ -1,0 +1,84 @@
+package controllers
+
+import (
+	"cloud_file_manager/dto"
+	"cloud_file_manager/handlers"
+	"cloud_file_manager/usecase"
+	"fmt"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
+)
+
+type AwsController struct {
+	awsUsecase usecase.AwsUsecase
+}
+
+func NewAwsController(usecase usecase.AwsUsecase) AwsController {
+	return AwsController{
+		awsUsecase: usecase,
+	}
+}
+
+func (ac *AwsController) CreateBucket(ctx *gin.Context) {
+	claimsValue, exists := ctx.Get("claims")
+	if !exists {
+		response := handlers.Response {
+			Message: "Não foi possível achar as informações do token",
+		}
+		ctx.JSON(http.StatusUnauthorized, response)
+		return
+	}
+
+	claims, ok := claimsValue.(jwt.MapClaims)
+	if !ok {
+			response := handlers.Response{
+					Message: "Erro ao converter claims",
+			}
+			ctx.JSON(http.StatusInternalServerError, response)
+			return
+	}
+
+	userId := int(claims["userId"].(float64))
+
+	var bucketName dto.BucketNameDto
+	err := ctx.BindJSON(&bucketName)
+	if err != nil {
+		response := handlers.Response{
+			Message: "É necessário o nome do bucket para sua criação",
+		}
+		ctx.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	if bucketName.BucketName == "" {
+		response := handlers.Response{
+			Message: "É necessário o nome do bucket para sua criação",
+		}
+		ctx.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	output, err := ac.awsUsecase.CreateBucket(userId, bucketName.BucketName)
+	if err != nil {
+		response := handlers.Response{
+			Message: "Não foi possível criar o bucket, verifique o nome escolhido",
+		}
+		fmt.Println(err)
+		ctx.JSON(http.StatusInternalServerError, response)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, output)
+}
+
+func (ac *AwsController) ListBuckets(ctx *gin.Context) {
+	output, err := ac.awsUsecase.ListBuckets()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, output)
+}	
