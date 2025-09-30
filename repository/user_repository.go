@@ -139,7 +139,7 @@ func (ur *UserRepository) Login (userDto dto.UserLoginDto) (*dto.UserResponseDto
 	userResponse.Name = user.Name
 	userResponse.Email = user.Email
 
-	token, err := handlers.CreateToken(user.Name, user.Password)
+	token, err := handlers.CreateToken(user.Name, user.Password, user.ID)
 	if err != nil {
 		return nil, err
 	}

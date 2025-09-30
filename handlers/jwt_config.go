@@ -19,7 +19,8 @@ func VerifyToken (ctx *gin.Context) {
 		ctx.AbortWithStatus(http.StatusBadRequest)
 	}
 
-	token, err := jwt.Parse(tokenString, func(t *jwt.Token) (any, error) {
+	claims := jwt.MapClaims{}
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (any, error) {
 		return []byte(os.Getenv("JWT_SECRET")), nil
 	})
 	if err != nil {
@@ -38,14 +39,16 @@ func VerifyToken (ctx *gin.Context) {
 		ctx.AbortWithStatus(http.StatusBadRequest)
 	}
 
+	ctx.Set("claims", claims)
 	ctx.Next()
 }
 
-func CreateToken(username string, password string) (string, error) {
+func CreateToken(username string, password string, userId int) (string, error) {
 	token := jwt.NewWithClaims(
 		jwt.SigningMethodHS256,
 		jwt.MapClaims{
 			"username": username,
+			"userId": userId,
 			"exp": time.Now().Add(time.Hour * 24).Unix(),
 		})
 	
