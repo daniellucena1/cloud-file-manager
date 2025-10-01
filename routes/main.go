@@ -23,13 +23,13 @@ func SetupRoutes (
 
 	// User routes
 	users := server.Group("/users")
-	users.GET("/", UserController.GetUsers)
+	users.GET("", UserController.GetUsers)
 	users.GET("/:id", handlers.VerifyToken, UserController.GetUserById)
-	users.POST("/", UserController.CreateUser)
+	users.POST("", UserController.CreateUser)
 
 	// Login routes
 	login := server.Group("/login")
-	login.POST("/", LoginController.Login)
+	login.POST("", LoginController.Login)
 
 	// Aws routes
 	aws := server.Group("/aws")

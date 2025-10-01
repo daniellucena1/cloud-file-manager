@@ -35,6 +35,8 @@ func SetupAndRunApp() error {
 	client := s3.NewFromConfig(cfg)
 
 	server := gin.Default()
+
+	server.Use(config.CORSMiddleware())
 	
 	UserRepository := repository.NewUserRepository(dbConection)
 	AwsService := aws.NewAwsService(client)
