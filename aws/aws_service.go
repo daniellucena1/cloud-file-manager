@@ -85,3 +85,28 @@ func (as *AwsService) ListBuckets(ctx context.Context) ([]types.Bucket, error) {
 
 	return buckets, err
 }
+
+func (as *AwsService) ListBucketItems(ctx context.Context, bucketName string) ([]types.Object, error) {
+	var err error
+	var output *s3.ListObjectsV2Output
+	input := &s3.ListObjectsV2Input{
+		Bucket: &bucketName,
+	}
+	var objects []types.Object
+	objectPaginator := s3.NewListObjectsV2Paginator(as.client, input)
+	for objectPaginator.HasMorePages() {
+		output, err = objectPaginator.NextPage(ctx)
+		if err != nil {
+			var noBucket *types.NoSuchBucket
+			if errors.As(err, &noBucket) {
+				log.Printf("O bucket %s não existe.\n", bucketName)
+				err = noBucket
+			}
+			return nil, err
+		} else {
+			objects = append(objects, output.Contents...)
+		}
+	}
+
+	return objects, err
+}

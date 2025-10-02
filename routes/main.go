@@ -35,4 +35,5 @@ func SetupRoutes (
 	aws := server.Group("/aws")
 	aws.POST("/bucket", handlers.VerifyToken, AwsController.CreateBucket)
 	aws.GET("/bucket", handlers.VerifyToken, AwsController.ListBuckets)
+	aws.GET("/bucket/items", handlers.VerifyToken, AwsController.ListBucketItems)
 }
