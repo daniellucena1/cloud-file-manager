@@ -36,6 +36,6 @@ func SetupRoutes (
 	aws.POST("/bucket", handlers.VerifyToken, AwsController.CreateBucket)
 	aws.GET("/bucket", handlers.VerifyToken, AwsController.ListBuckets)
 	aws.GET("/bucket/items", handlers.VerifyToken, AwsController.ListBucketItems)
-	aws.GET("/bucket/object", handlers.VerifyToken, AwsController.GetObject)
-	aws.GET("/bucket/put", handlers.VerifyToken, AwsController.PutObject)
+	aws.POST("/bucket/object", handlers.VerifyToken, AwsController.GetObject)
+	aws.POST("/bucket/put", handlers.VerifyToken, AwsController.PutObject)
 }
