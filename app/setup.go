@@ -33,11 +33,14 @@ func SetupAndRunApp() error {
 	}
 
 	client := s3.NewFromConfig(cfg)
+	presigner := s3.NewPresignClient(client)
 
 	server := gin.Default()
+
+	server.Use(config.CORSMiddleware())
 	
 	UserRepository := repository.NewUserRepository(dbConection)
-	AwsService := aws.NewAwsService(client)
+	AwsService := aws.NewAwsService(client, presigner)
 	AwsUsecase := usecase.NewAwsUsecase(AwsService)
 	UserUsecase := usecase.NewUserUseCase(UserRepository)
 	UserController := controllers.NewUserController(UserUsecase)

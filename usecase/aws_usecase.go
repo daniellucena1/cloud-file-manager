@@ -5,7 +5,9 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 
+	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 )
@@ -45,4 +47,76 @@ func (au *AwsUsecase) ListBuckets() ([]types.Bucket, error) {
 	}
 
 	return output, nil
+}
+
+func (au *AwsUsecase) ListBucketItems(userId int) ([]types.Object, error) {
+	ctx := context.Background()
+
+	buckets, err := au.AwsService.ListBuckets(ctx)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	var suffix string
+	suffix = "-" + strconv.Itoa(userId)
+
+	var bucketName string
+
+	for _, element := range buckets {
+		if strings.HasSuffix(*element.Name, suffix) {
+			bucketName = *element.Name
+		}
+	}
+
+	output, err := au.AwsService.ListBucketItems(ctx, bucketName)
+
+	return output, err
+}
+
+func (au *AwsUsecase) GetObject(userId int, objectKey string) (*v4.PresignedHTTPRequest, error) {
+	ctx := context.Background()
+
+	buckets, err := au.AwsService.ListBuckets(ctx)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	var suffix string
+	suffix = "-" + strconv.Itoa(userId)
+
+	var bucketName string
+
+	for _, element := range buckets {
+		if strings.HasSuffix(*element.Name, suffix) {
+			bucketName = *element.Name
+		}
+	}
+
+	output, err := au.AwsService.GetObject(ctx, bucketName, objectKey, 60)
+
+	return output, err
+}
+
+func (au *AwsUsecase) PutObject(userId int, objectKey string) (*v4.PresignedHTTPRequest, error) {
+	ctx := context.Background()
+
+	buckets, err := au.AwsService.ListBuckets(ctx)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	var suffix string
+	suffix = "-" + strconv.Itoa(userId)
+
+	var bucketName string
+
+	for _, element := range buckets {
+		if strings.HasSuffix(*element.Name, suffix) {
+			bucketName = *element.Name
+		}
+	}
+
+	output, err := au.AwsService.PutObjectPresignedUrl(ctx, bucketName, objectKey, 60)
+
+	return output, err
 }
