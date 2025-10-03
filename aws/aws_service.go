@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go"
@@ -109,4 +110,23 @@ func (as *AwsService) ListBucketItems(ctx context.Context, bucketName string) ([
 	}
 
 	return objects, err
+}
+
+func (as *AwsService) GetObject(ctx context.Context, bucketName string, objectKey string, lifetimeSecs int64) (*v4.PresignedHTTPRequest, error) {
+	presign := s3.NewPresignClient(as.client)
+	request, err := presign.PresignGetObject(
+		ctx,
+		&s3.GetObjectInput{
+			Bucket: aws.String(bucketName),
+			Key: aws.String(objectKey),
+		}, func(po *s3.PresignOptions) {
+			po.Expires = time.Duration(lifetimeSecs * int64(time.Second))
+		},
+	)
+	if err != nil {
+		log.Printf("Não foi possível fazer a requisição pré-assinada de %v:%v. Aqui está o por quê: %v\n",
+			bucketName, objectKey, err)
+	}
+
+	return request, err
 }
