@@ -16,11 +16,13 @@ import (
 
 type AwsService struct {
 	client *s3.Client
+	presigner *s3.PresignClient
 }
 
-func NewAwsService(client *s3.Client) AwsService {
+func NewAwsService(client *s3.Client, presigner *s3.PresignClient) AwsService {
 	return AwsService{
 		client: client,
+		presigner: presigner,
 	}
 }
 
@@ -113,8 +115,7 @@ func (as *AwsService) ListBucketItems(ctx context.Context, bucketName string) ([
 }
 
 func (as *AwsService) GetObject(ctx context.Context, bucketName string, objectKey string, lifetimeSecs int64) (*v4.PresignedHTTPRequest, error) {
-	presign := s3.NewPresignClient(as.client)
-	request, err := presign.PresignGetObject(
+	request, err := as.presigner.PresignGetObject(
 		ctx,
 		&s3.GetObjectInput{
 			Bucket: aws.String(bucketName),
@@ -123,8 +124,27 @@ func (as *AwsService) GetObject(ctx context.Context, bucketName string, objectKe
 			po.Expires = time.Duration(lifetimeSecs * int64(time.Second))
 		},
 	)
+
 	if err != nil {
 		log.Printf("Não foi possível fazer a requisição pré-assinada de %v:%v. Aqui está o por quê: %v\n",
+			bucketName, objectKey, err)
+	}
+
+	return request, err
+}
+
+func (as *AwsService) PutObjectPresignedUrl(ctx context.Context, bucketName string, objectKey string, lifetimeSecs int64) (*v4.PresignedHTTPRequest, error) {
+	request, err := as.presigner.PresignPutObject(
+		ctx,
+		&s3.PutObjectInput{
+			Bucket: aws.String(bucketName),
+			Key: aws.String(objectKey),
+		}, func(po *s3.PresignOptions) {
+			po.Expires = time.Duration(lifetimeSecs * int64(time.Second))
+		},
+	)
+	if err != nil {
+		log.Printf("Couldn't get a presigned request to put %v:%v. Here's why: %v\n",
 			bucketName, objectKey, err)
 	}
 
