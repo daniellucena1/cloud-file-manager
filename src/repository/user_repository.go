@@ -1,9 +1,9 @@
 package repository
 
 import (
-	"cloud_file_manager/dto"
-	"cloud_file_manager/handlers"
-	"cloud_file_manager/models"
+	"cloud_file_manager/src/dto"
+	"cloud_file_manager/src/handlers"
+	"cloud_file_manager/src/models"
 	"database/sql"
 	"fmt"
 

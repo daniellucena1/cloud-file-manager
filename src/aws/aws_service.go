@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -36,6 +37,7 @@ func (as *AwsService) CreateBucket(ctx context.Context, bucketName string) (*s3.
 			},
 		},
 	)
+
 	if err != nil {
 		var owned *types.BucketAlreadyOwnedByYou
 		var exists *types.BucketAlreadyExists
@@ -59,6 +61,24 @@ func (as *AwsService) CreateBucket(ctx context.Context, bucketName string) (*s3.
 	if err != nil {
 		log.Printf("Tentativa falha de esperar o bucket %s ser criado.\n", bucketName)
 		return nil, err
+	}
+
+	corsConfig := &s3.PutBucketCorsInput{
+		Bucket: aws.String(bucketName),
+		CORSConfiguration: &types.CORSConfiguration{
+			CORSRules: []types.CORSRule{
+				{
+					AllowedHeaders: []string{"*"},
+					AllowedMethods: []string{"GET", "PUT", "POST", "HEAD"},
+					AllowedOrigins: []string{os.Getenv("ORIGIN_FRONT")},
+				},
+			},
+		},
+	}
+
+	_, err = as.client.PutBucketCors(ctx, corsConfig)
+	if err != nil {
+		log.Fatalf("Erro configurando CORS: %v", err)
 	}
 
 	return output, nil

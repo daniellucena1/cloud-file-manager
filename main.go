@@ -1,7 +1,7 @@
 package main
 
 import (
-	"cloud_file_manager/app"
+	"cloud_file_manager/src/app"
 )
 
 func main() {

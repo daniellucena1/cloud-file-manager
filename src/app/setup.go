@@ -1,13 +1,13 @@
 package app
 
 import (
-	"cloud_file_manager/aws"
-	"cloud_file_manager/config"
-	"cloud_file_manager/controllers"
-	"cloud_file_manager/database"
-	"cloud_file_manager/repository"
-	"cloud_file_manager/routes"
-	"cloud_file_manager/usecase"
+	"cloud_file_manager/src/aws"
+	"cloud_file_manager/src/config"
+	"cloud_file_manager/src/controllers"
+	"cloud_file_manager/src/database"
+	"cloud_file_manager/src/repository"
+	"cloud_file_manager/src/routes"
+	"cloud_file_manager/src/usecase"
 	"context"
 	"log"
 
@@ -42,7 +42,7 @@ func SetupAndRunApp() error {
 	UserRepository := repository.NewUserRepository(dbConection)
 	AwsService := aws.NewAwsService(client, presigner)
 	AwsUsecase := usecase.NewAwsUsecase(AwsService)
-	UserUsecase := usecase.NewUserUseCase(UserRepository)
+	UserUsecase := usecase.NewUserUseCase(UserRepository, AwsService)
 	UserController := controllers.NewUserController(UserUsecase)
 	LoginController := controllers.NewLoginController(UserUsecase)
 	AwsController := controllers.NewAwsController(AwsUsecase)

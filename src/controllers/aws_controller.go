@@ -1,9 +1,10 @@
 package controllers
 
 import (
-	"cloud_file_manager/dto"
-	"cloud_file_manager/handlers"
-	"cloud_file_manager/usecase"
+	"cloud_file_manager/src/dto"
+	"cloud_file_manager/src/handlers"
+	"cloud_file_manager/src/usecase"
+	"cloud_file_manager/src/utils"
 	"fmt"
 	"net/http"
 
@@ -42,13 +43,9 @@ func (ac *AwsController) CreateBucket(ctx *gin.Context) {
 
 	userId := int(claims["userId"].(float64))
 
-	var bucketName dto.BucketNameDto
-	err := ctx.BindJSON(&bucketName)
+	bucketName, err := utils.DecodeJson[dto.BucketNameDto](ctx.Request.Body)
 	if err != nil {
-		response := handlers.Response{
-			Message: "É necessário o nome do bucket para sua criação",
-		}
-		ctx.JSON(http.StatusBadRequest, response)
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -138,13 +135,9 @@ func (ac *AwsController) GetObject(ctx *gin.Context) {
 
 	userId := int(claims["userId"].(float64))
 
-	var objectKey dto.ObjectKeyDto
-	err := ctx.BindJSON(&objectKey)
+	objectKey, err := utils.DecodeJson[dto.ObjectKeyDto](ctx.Request.Body)
 	if err != nil {
-		response := handlers.Response{
-			Message: "É necessário o caminho do arquivo",
-		}
-		ctx.JSON(http.StatusBadRequest, response)
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -190,13 +183,9 @@ func (ac *AwsController) PutObject(ctx *gin.Context) {
 
 	userId := int(claims["userId"].(float64))
 
-	var objectKey dto.ObjectKeyDto
-	err := ctx.BindJSON(&objectKey)
+	objectKey, err := utils.DecodeJson[dto.ObjectKeyDto](ctx.Request.Body)
 	if err != nil {
-		response := handlers.Response{
-			Message: "É necessário o caminho do arquivo",
-		}
-		ctx.JSON(http.StatusBadRequest, response)
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 

@@ -1,7 +1,7 @@
 package usecase
 
 import (
-	"cloud_file_manager/aws"
+	"cloud_file_manager/src/aws"
 	"context"
 	"fmt"
 	"strconv"
