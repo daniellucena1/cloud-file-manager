@@ -174,3 +174,126 @@ func TestUserUsecaseCreateUserAwsError(t *testing.T) {
 		t.Fatalf("esperava erro %v, veio %v", awsErr, err)
 	}
 }
+
+func TestUserUsecaseGetUsers(t *testing.T) {
+	expected := []models.User{
+		{ID: 1, Name: "Ana"},
+		{ID: 2, Name: "João"},
+	}
+	repo := &fakeUserRepo{
+		getUsersFn: func() ([]models.User, error) {
+			return expected, nil
+		},
+	}
+
+	usecase := NewUserUseCase(repo, &fakeAwsClient{
+		createBucketFn: func(context.Context, string) (*s3.CreateBucketOutput, error) {
+			panic("não deveria chamar aws")
+		},
+	})
+
+	users, err := usecase.GetUsers()
+	if err != nil {
+		t.Fatalf("não esperava erro, veio %v", err)
+	}
+	if len(users) != len(expected) {
+		t.Fatalf("esperava %d usuários, veio %d", len(expected), len(users))
+	}
+	if users[1].Name != "João" {
+		t.Errorf("esperava segundo usuário João, veio %s", users[1].Name)
+	}
+}
+
+func TestUserUsecaseGetUserById(t *testing.T) {
+	repo := &fakeUserRepo{
+		getUserByIDFn: func(id int) (*models.User, error) {
+			if id != 5 {
+				t.Fatalf("id inesperado %d", id)
+			}
+			return &models.User{ID: id, Name: "Maria"}, nil
+		},
+	}
+
+	usecase := NewUserUseCase(repo, &fakeAwsClient{
+		createBucketFn: func(context.Context, string) (*s3.CreateBucketOutput, error) {
+			panic("não deveria chamar aws")
+		},
+	})
+
+	user, err := usecase.GetUserById(5)
+	if err != nil {
+		t.Fatalf("não esperava erro, veio %v", err)
+	}
+	if user == nil || user.Name != "Maria" {
+		t.Fatalf("esperava Maria, veio %#v", user)
+	}
+}
+
+func TestUserUsecaseGetUserByIdError(t *testing.T) {
+	expectedErr := errors.New("db error")
+	repo := &fakeUserRepo{
+		getUserByIDFn: func(int) (*models.User, error) {
+			return nil, expectedErr
+		},
+	}
+
+	usecase := NewUserUseCase(repo, &fakeAwsClient{
+		createBucketFn: func(context.Context, string) (*s3.CreateBucketOutput, error) {
+			panic("não deveria chamar aws")
+		},
+	})
+
+	_, err := usecase.GetUserById(1)
+	if !errors.Is(err, expectedErr) {
+		t.Fatalf("esperava erro %v, veio %v", expectedErr, err)
+	}
+}
+
+func TestUserUsecaseLogin(t *testing.T) {
+	response := &dto.UserResponseDto{ID: 3, Name: "Leo"}
+	repo := &fakeUserRepo{
+		loginFn: func(input dto.UserLoginDto) (*dto.UserResponseDto, error) {
+			if input.Email != "leo@example.com" {
+				t.Fatalf("email inesperado %s", input.Email)
+			}
+			return response, nil
+		},
+	}
+
+	usecase := NewUserUseCase(repo, &fakeAwsClient{
+		createBucketFn: func(context.Context, string) (*s3.CreateBucketOutput, error) {
+			panic("não deveria chamar aws")
+		},
+	})
+
+	result, err := usecase.Login(dto.UserLoginDto{
+		Email:    "leo@example.com",
+		Password: "pwd",
+	})
+	if err != nil {
+		t.Fatalf("não esperava erro, veio %v", err)
+	}
+	if result != response {
+		t.Fatalf("esperava ponteiro %p, veio %p", response, result)
+	}
+}
+
+func TestUserUsecaseLoginError(t *testing.T) {
+	expectedErr := errors.New("login error")
+	repo := &fakeUserRepo{
+		loginFn: func(dto.UserLoginDto) (*dto.UserResponseDto, error) {
+			return nil, expectedErr
+		},
+	}
+
+	usecase := NewUserUseCase(repo, &fakeAwsClient{
+		createBucketFn: func(context.Context, string) (*s3.CreateBucketOutput, error) {
+			panic("não deveria chamar aws")
+		},
+	})
+
+	_, err := usecase.Login(dto.UserLoginDto{})
+	if !errors.Is(err, expectedErr) {
+		t.Fatalf("esperava erro %v, veio %v", expectedErr, err)
+	}
+}
