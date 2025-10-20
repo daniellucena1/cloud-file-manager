@@ -38,7 +38,7 @@ func SetupAndRunApp() error {
 	server := gin.Default()
 
 	server.Use(config.CORSMiddleware())
-	
+
 	UserRepository := repository.NewUserRepository(dbConection)
 	AwsService := aws.NewAwsService(client, presigner)
 	AwsUsecase := usecase.NewAwsUsecase(AwsService)

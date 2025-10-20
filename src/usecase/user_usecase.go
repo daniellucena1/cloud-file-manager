@@ -1,21 +1,19 @@
 package usecase
 
 import (
-	"cloud_file_manager/src/aws"
 	"cloud_file_manager/src/dto"
 	"cloud_file_manager/src/models"
-	"cloud_file_manager/src/repository"
 	"context"
 	"fmt"
 	"strconv"
 )
 
 type UserUsecase struct {
-	repository repository.UserRepository
-	awsService aws.AwsService
+	repository UserRepository
+	awsService AwsClient
 }
 
-func NewUserUseCase(repo repository.UserRepository, aws aws.AwsService) UserUsecase {
+func NewUserUseCase(repo UserRepository, aws AwsClient) UserUsecase {
 	return UserUsecase{
 		repository: repo,
 		awsService: aws,
@@ -28,7 +26,6 @@ func (uu *UserUsecase) GetUsers() ([]models.User, error) {
 
 func (uu *UserUsecase) CreateUser(user models.User) (models.User, error) {
 
-	
 	userId, err := uu.repository.CreateUser(user)
 	if err != nil {
 		fmt.Println(err)
@@ -36,7 +33,7 @@ func (uu *UserUsecase) CreateUser(user models.User) (models.User, error) {
 	}
 
 	ctx := context.Background()
-	bucketName := "myawss3bucket-90902222345-" + strconv.Itoa(userId) 
+	bucketName := "myawss3bucket-90902222345-" + strconv.Itoa(userId)
 	_, err = uu.awsService.CreateBucket(ctx, bucketName)
 	if err != nil {
 		fmt.Println(err)

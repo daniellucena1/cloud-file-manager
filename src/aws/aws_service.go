@@ -16,13 +16,13 @@ import (
 )
 
 type AwsService struct {
-	client *s3.Client
+	client    *s3.Client
 	presigner *s3.PresignClient
 }
 
-func NewAwsService(client *s3.Client, presigner *s3.PresignClient) AwsService {
-	return AwsService{
-		client: client,
+func NewAwsService(client *s3.Client, presigner *s3.PresignClient) *AwsService {
+	return &AwsService{
+		client:    client,
 		presigner: presigner,
 	}
 }
@@ -139,7 +139,7 @@ func (as *AwsService) GetObject(ctx context.Context, bucketName string, objectKe
 		ctx,
 		&s3.GetObjectInput{
 			Bucket: aws.String(bucketName),
-			Key: aws.String(objectKey),
+			Key:    aws.String(objectKey),
 		}, func(po *s3.PresignOptions) {
 			po.Expires = time.Duration(lifetimeSecs * int64(time.Second))
 		},
@@ -158,7 +158,7 @@ func (as *AwsService) PutObjectPresignedUrl(ctx context.Context, bucketName stri
 		ctx,
 		&s3.PutObjectInput{
 			Bucket: aws.String(bucketName),
-			Key: aws.String(objectKey),
+			Key:    aws.String(objectKey),
 		}, func(po *s3.PresignOptions) {
 			po.Expires = time.Duration(lifetimeSecs * int64(time.Second))
 		},

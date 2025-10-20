@@ -1,7 +1,6 @@
 package usecase
 
 import (
-	"cloud_file_manager/src/aws"
 	"context"
 	"fmt"
 	"strconv"
@@ -13,10 +12,10 @@ import (
 )
 
 type AwsUsecase struct {
-	AwsService aws.AwsService
+	AwsService AwsClient
 }
 
-func NewAwsUsecase(awsService aws.AwsService) AwsUsecase {
+func NewAwsUsecase(awsService AwsClient) AwsUsecase {
 	return AwsUsecase{
 		AwsService: awsService,
 	}

@@ -14,8 +14,8 @@ type UserRepository struct {
 	connection *sql.DB
 }
 
-func NewUserRepository(connection *sql.DB) UserRepository {
-	return UserRepository{
+func NewUserRepository(connection *sql.DB) *UserRepository {
+	return &UserRepository{
 		connection: connection,
 	}
 }
@@ -32,7 +32,7 @@ func (pr *UserRepository) GetUsers() ([]models.User, error) {
 	var userList []models.User
 	var userObj models.User
 
-	for rows.Next(){
+	for rows.Next() {
 		err = rows.Scan(
 			&userObj.ID,
 			&userObj.Name,
@@ -55,7 +55,7 @@ func (pr *UserRepository) GetUsers() ([]models.User, error) {
 
 func (ur *UserRepository) CreateUser(user models.User) (int, error) {
 	var id int
-	query, err := ur.connection.Prepare("INSERT INTO users" + 
+	query, err := ur.connection.Prepare("INSERT INTO users" +
 		"(user_name, user_email, user_password)" +
 		" VALUES ($1, $2, $3) RETURNING id")
 	if err != nil {
@@ -79,7 +79,7 @@ func (ur *UserRepository) CreateUser(user models.User) (int, error) {
 }
 
 func (ur *UserRepository) GetUserById(id int) (*models.User, error) {
-	
+
 	var user models.User
 
 	query, err := ur.connection.Prepare("SELECT * FROM users WHERE id = $1")
@@ -106,7 +106,7 @@ func (ur *UserRepository) GetUserById(id int) (*models.User, error) {
 	return &user, nil
 }
 
-func (ur *UserRepository) Login (userDto dto.UserLoginDto) (*dto.UserResponseDto, error) {
+func (ur *UserRepository) Login(userDto dto.UserLoginDto) (*dto.UserResponseDto, error) {
 	var user models.User
 
 	query, err := ur.connection.Prepare("SELECT id, user_name, user_email, user_password FROM users WHERE user_email = $1")
@@ -150,7 +150,7 @@ func (ur *UserRepository) Login (userDto dto.UserLoginDto) (*dto.UserResponseDto
 	return &userResponse, nil
 }
 
-func validatePassword (password string, savedPassword string) (bool, error) {
+func validatePassword(password string, savedPassword string) (bool, error) {
 	err := bcrypt.CompareHashAndPassword([]byte(savedPassword), []byte(password))
 	if err != nil {
 		return false, err
