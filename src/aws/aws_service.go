@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -15,13 +16,13 @@ import (
 )
 
 type AwsService struct {
-	client *s3.Client
+	client    *s3.Client
 	presigner *s3.PresignClient
 }
 
-func NewAwsService(client *s3.Client, presigner *s3.PresignClient) AwsService {
-	return AwsService{
-		client: client,
+func NewAwsService(client *s3.Client, presigner *s3.PresignClient) *AwsService {
+	return &AwsService{
+		client:    client,
 		presigner: presigner,
 	}
 }
@@ -36,6 +37,7 @@ func (as *AwsService) CreateBucket(ctx context.Context, bucketName string) (*s3.
 			},
 		},
 	)
+
 	if err != nil {
 		var owned *types.BucketAlreadyOwnedByYou
 		var exists *types.BucketAlreadyExists
@@ -59,6 +61,24 @@ func (as *AwsService) CreateBucket(ctx context.Context, bucketName string) (*s3.
 	if err != nil {
 		log.Printf("Tentativa falha de esperar o bucket %s ser criado.\n", bucketName)
 		return nil, err
+	}
+
+	corsConfig := &s3.PutBucketCorsInput{
+		Bucket: aws.String(bucketName),
+		CORSConfiguration: &types.CORSConfiguration{
+			CORSRules: []types.CORSRule{
+				{
+					AllowedHeaders: []string{"*"},
+					AllowedMethods: []string{"GET", "PUT", "POST", "HEAD"},
+					AllowedOrigins: []string{os.Getenv("ORIGIN_FRONT")},
+				},
+			},
+		},
+	}
+
+	_, err = as.client.PutBucketCors(ctx, corsConfig)
+	if err != nil {
+		log.Fatalf("Erro configurando CORS: %v", err)
 	}
 
 	return output, nil
@@ -119,7 +139,7 @@ func (as *AwsService) GetObject(ctx context.Context, bucketName string, objectKe
 		ctx,
 		&s3.GetObjectInput{
 			Bucket: aws.String(bucketName),
-			Key: aws.String(objectKey),
+			Key:    aws.String(objectKey),
 		}, func(po *s3.PresignOptions) {
 			po.Expires = time.Duration(lifetimeSecs * int64(time.Second))
 		},
@@ -138,7 +158,7 @@ func (as *AwsService) PutObjectPresignedUrl(ctx context.Context, bucketName stri
 		ctx,
 		&s3.PutObjectInput{
 			Bucket: aws.String(bucketName),
-			Key: aws.String(objectKey),
+			Key:    aws.String(objectKey),
 		}, func(po *s3.PresignOptions) {
 			po.Expires = time.Duration(lifetimeSecs * int64(time.Second))
 		},

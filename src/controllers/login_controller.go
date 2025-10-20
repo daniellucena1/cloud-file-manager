@@ -1,9 +1,10 @@
 package controllers
 
 import (
-	"cloud_file_manager/dto"
-	"cloud_file_manager/handlers"
-	"cloud_file_manager/usecase"
+	"cloud_file_manager/src/dto"
+	"cloud_file_manager/src/handlers"
+	"cloud_file_manager/src/usecase"
+	"cloud_file_manager/src/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -20,10 +21,10 @@ func NewLoginController(usecase usecase.UserUsecase) LoginController {
 }
 
 func (lc *LoginController) Login(ctx *gin.Context) {
-	var user dto.UserLoginDto
-	err := ctx.BindJSON(&user)
+	
+	user, err := utils.DecodeJson[dto.UserLoginDto](ctx.Request.Body)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -35,7 +36,7 @@ func (lc *LoginController) Login(ctx *gin.Context) {
 		return
 	}
 
-	loginUser, err := lc.userUsecase.Login(user)
+	loginUser, err := lc.userUsecase.Login(*user)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return

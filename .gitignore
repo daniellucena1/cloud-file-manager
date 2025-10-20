@@ -1,2 +1,4 @@
 .env
 cloud_file_manager
+tmp/
+.vscode/

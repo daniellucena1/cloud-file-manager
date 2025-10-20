@@ -1,8 +1,8 @@
 package routes
 
 import (
-	"cloud_file_manager/controllers"
-	"cloud_file_manager/handlers"
+	"cloud_file_manager/src/controllers"
+	"cloud_file_manager/src/handlers"
 
 	"github.com/gin-gonic/gin"
 )

@@ -1,9 +1,10 @@
 package controllers
 
 import (
-	"cloud_file_manager/handlers"
-	"cloud_file_manager/models"
-	"cloud_file_manager/usecase"
+	"cloud_file_manager/src/handlers"
+	"cloud_file_manager/src/models"
+	"cloud_file_manager/src/usecase"
+	"cloud_file_manager/src/utils"
 	"net/http"
 	"strconv"
 
@@ -31,16 +32,16 @@ func (u *UserController) GetUsers(ctx *gin.Context) {
 }
 
 func (u *UserController) CreateUser(ctx *gin.Context) {
-	var user models.User
-	err := ctx.BindJSON(&user)
+
+	user, err := utils.DecodeJson[models.User](ctx.Request.Body)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	insertedUser, err := u.userUsecase.CreateUser(user)
+	insertedUser, err := u.userUsecase.CreateUser(*user)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
